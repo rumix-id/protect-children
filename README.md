@@ -1,16 +1,37 @@
-# README
+#  🛡️ PROTECT-CHILDREN
+protect-children is a Windows-based desktop application specifically designed to help parents monitor their children's digital activities. This program focuses on monitoring text input in specific applications to ensure children's safety from inappropriate content.
 
-## About
+## ✨ Key Features
 
-This is the official Wails Svelte template.
+* **Smart Keyword Detection**: Automatically detects sensitive words or adult content. Suspicious words will be highlighted in red in the log.
 
-## Live Development
+* **Stealth Mode**: Runs silently in the background without disturbing your child's activities.
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+* **Auto-Run**: Option to run the application automatically as soon as the computer is turned on.
 
-## Building
+## 🛠️ How to Compile (Build)
+To allow others to try or develop this program, they need to follow these steps:
 
-To build a redistributable, production mode package, use `wails build`.
+#  🎯 Requirements:
+
+* **Install Go (latest version).**
+
+* **Install Node.js & NPM.**
+
+* **Install Wails CLI**: go install github.com/wailsapp/wails/v2/cmd/wails@latest.
+
+# 📦Build Steps:
+
+* **Clone repo**: ```git clone https://github.com/username/protect-children.git.```
+
+* **Install Frontend**: Go to the ```frontend``` folder and run ```npm install```.
+
+* **Compile**: In the root directory (the folder containing ```wails.json```), run the command: ```wails build```
+* **Result**: A ready-to-use ```.exe``` file will appear in the ```build/bin/``` folder.
+
+# 🚀 Technology
+* **Backend**: Go
+
+* **Frontend**: Svelte (via Wails Framework)
+
+### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
