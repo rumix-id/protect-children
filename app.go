@@ -20,7 +20,6 @@ var (
 
 type AppConfig struct {
 	BannedWords string `json:"banned_words"`
-	HotkeyCodes []int  `json:"hotkey_codes"`
 	IsRunning   bool   `json:"is_running"`
 	AutoStart   bool   `json:"auto_start"`
 }
@@ -30,7 +29,6 @@ type App struct {
 	isRunning    bool
 	cancelFunc   context.CancelFunc
 	lastKeyState [256]bool
-	hotkeyCodes  []int
 	bannedWords  string
 	dbPath       string
 	logPath      string
@@ -38,14 +36,12 @@ type App struct {
 }
 
 func NewApp() *App {
-	// Get absolute path to ensure config is found during autostart
 	exePath, _ := os.Executable()
 	baseDir := filepath.Dir(exePath)
 
 	return &App{
-		hotkeyCodes: []int{17, 16, 46},
-		dbPath:      filepath.Join(baseDir, "db", "config.json"),
-		logPath:     filepath.Join(baseDir, "db", "activity.log"),
+		dbPath:  filepath.Join(baseDir, "db", "config.json"),
+		logPath: filepath.Join(baseDir, "db", "activity.log"),
 	}
 }
 
@@ -54,15 +50,12 @@ func (a *App) startup(ctx context.Context) {
 	os.MkdirAll(filepath.Dir(a.dbPath), 0755)
 	a.loadFromDB()
 
-	// Resume monitoring if it was active before restart
 	if a.isRunning {
 		go func() {
-			time.Sleep(1 * time.Second) // Wait for system readiness
+			time.Sleep(1 * time.Second)
 			a.ToggleProtections(true)
 		}()
 	}
-
-	go a.watchGlobalHotkey()
 }
 
 func (a *App) loadFromDB() {
@@ -71,9 +64,6 @@ func (a *App) loadFromDB() {
 		var data AppConfig
 		json.Unmarshal(file, &data)
 		a.bannedWords = data.BannedWords
-		if len(data.HotkeyCodes) > 0 {
-			a.hotkeyCodes = data.HotkeyCodes
-		}
 		a.isRunning = data.IsRunning
 		a.isAutoStart = data.AutoStart
 	}
@@ -82,7 +72,6 @@ func (a *App) loadFromDB() {
 func (a *App) saveToDB() {
 	data := AppConfig{
 		BannedWords: a.bannedWords,
-		HotkeyCodes: a.hotkeyCodes,
 		IsRunning:   a.isRunning,
 		AutoStart:   a.isAutoStart,
 	}
@@ -99,9 +88,9 @@ func (a *App) ReadLogs() string {
 }
 
 func (a *App) GetCurrentConfig() map[string]interface{} {
+	// Memastikan data terbaru diambil dari memory/field struct
 	return map[string]interface{}{
 		"isRunning":   a.isRunning,
-		"hotkeyCodes": a.hotkeyCodes,
 		"bannedWords": a.bannedWords,
 		"autoStart":   a.isAutoStart,
 	}
@@ -109,11 +98,6 @@ func (a *App) GetCurrentConfig() map[string]interface{} {
 
 func (a *App) UpdateBannedWords(words string) {
 	a.bannedWords = words
-	a.saveToDB()
-}
-
-func (a *App) UpdateHotkey(codes []int) {
-	a.hotkeyCodes = codes
 	a.saveToDB()
 }
 
@@ -179,7 +163,6 @@ func (a *App) mapKeys(vk int) string {
 	shift, _, _ := procGetKeyState.Call(uintptr(0x10))
 	isShift := (shift & 0x8000) != 0
 
-	// Added support for CTRL, SHIFT, CAPSLOCK, TAB, and ENTER
 	switch vk {
 	case 0x08:
 		return "[BACKSPACE]"
@@ -256,28 +239,6 @@ func (a *App) writeToLog(content string) {
 	if f != nil {
 		defer f.Close()
 		f.WriteString(content)
-	}
-}
-
-func (a *App) watchGlobalHotkey() {
-	for {
-		if len(a.hotkeyCodes) > 0 {
-			allPressed := true
-			for _, code := range a.hotkeyCodes {
-				v, _, _ := procGetAsyncKeyState.Call(uintptr(code))
-				if v&0x8000 == 0 {
-					allPressed = false
-					break
-				}
-			}
-			if allPressed {
-				if a.ctx != nil {
-					runtime.WindowShow(a.ctx)
-				}
-				time.Sleep(500 * time.Millisecond)
-			}
-		}
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 
