@@ -13,9 +13,8 @@ import (
 )
 
 var (
-	user32               = syscall.NewLazyDLL("user32.dll")
-	procGetAsyncKeyState = user32.NewProc("GetAsyncKeyState")
-	procGetKeyState      = user32.NewProc("GetKeyState")
+	user32Api            = syscall.NewLazyDLL("user32.dll")
+	procGetAsyncKeyState = user32Api.NewProc("GetAsyncKeyState")
 )
 
 type AppConfig struct {
@@ -50,33 +49,27 @@ func (a *App) startup(ctx context.Context) {
 	os.MkdirAll(filepath.Dir(a.dbPath), 0755)
 	a.loadFromDB()
 
-	if a.isRunning {
-		go func() {
-			time.Sleep(1 * time.Second)
+	go func() {
+		time.Sleep(500 * time.Millisecond)
+		if a.isRunning {
 			a.ToggleProtections(true)
-		}()
-	}
+		}
+	}()
 }
 
-func (a *App) loadFromDB() {
-	file, err := os.ReadFile(a.dbPath)
-	if err == nil {
-		var data AppConfig
-		json.Unmarshal(file, &data)
-		a.bannedWords = data.BannedWords
-		a.isRunning = data.IsRunning
-		a.isAutoStart = data.AutoStart
-	}
-}
+// --- Fungsi Baru untuk Kebutuhan Frontend ---
 
-func (a *App) saveToDB() {
-	data := AppConfig{
+func (a *App) GetCurrentConfig() AppConfig {
+	return AppConfig{
 		BannedWords: a.bannedWords,
 		IsRunning:   a.isRunning,
 		AutoStart:   a.isAutoStart,
 	}
-	file, _ := json.MarshalIndent(data, "", "  ")
-	_ = os.WriteFile(a.dbPath, file, 0644)
+}
+
+func (a *App) UpdateBannedWords(words string) {
+	a.bannedWords = words
+	a.saveToDB()
 }
 
 func (a *App) ReadLogs() string {
@@ -87,18 +80,29 @@ func (a *App) ReadLogs() string {
 	return string(content)
 }
 
-func (a *App) GetCurrentConfig() map[string]interface{} {
-	// Memastikan data terbaru diambil dari memory/field struct
-	return map[string]interface{}{
-		"isRunning":   a.isRunning,
-		"bannedWords": a.bannedWords,
-		"autoStart":   a.isAutoStart,
+// --- Akhir Fungsi Baru ---
+
+func (a *App) loadFromDB() {
+	file, err := os.ReadFile(a.dbPath)
+	if err != nil {
+		return
 	}
+	var data AppConfig
+	json.Unmarshal(file, &data)
+
+	a.bannedWords = data.BannedWords
+	a.isAutoStart = data.AutoStart
+	a.isRunning = data.IsRunning
 }
 
-func (a *App) UpdateBannedWords(words string) {
-	a.bannedWords = words
-	a.saveToDB()
+func (a *App) saveToDB() {
+	data := AppConfig{
+		BannedWords: a.bannedWords,
+		IsRunning:   a.isRunning,
+		AutoStart:   a.isAutoStart,
+	}
+	file, _ := json.MarshalIndent(data, "", "  ")
+	os.WriteFile(a.dbPath, file, 0644)
 }
 
 func (a *App) ToggleProtections(status bool) {
@@ -146,28 +150,35 @@ func (a *App) runKeylogger(ctx context.Context) {
 				if v&0x8000 != 0 && !a.lastKeyState[i] {
 					char := a.mapKeys(i)
 					if char != "" {
+						a.writeToLog(char)
+						// Mengirim event ke Frontend agar tampilan update otomatis
 						if a.ctx != nil {
 							runtime.EventsEmit(a.ctx, "new-key-event", map[string]string{"text": char})
 						}
-						a.writeToLog(char)
 					}
 				}
 				a.lastKeyState[i] = v&0x8000 != 0
 			}
-			time.Sleep(10 * time.Millisecond)
+			time.Sleep(15 * time.Millisecond)
 		}
 	}
 }
 
 func (a *App) mapKeys(vk int) string {
-	shift, _, _ := procGetKeyState.Call(uintptr(0x10))
-	isShift := (shift & 0x8000) != 0
+	if vk >= 0x30 && vk <= 0x39 {
+		return string(rune(vk))
+	}
+	if vk >= 0x41 && vk <= 0x5A {
+		return string(rune(vk + 32))
+	}
 
 	switch vk {
+	case 0x20:
+		return " "
+	case 0x0D:
+		return "[ENTER]" // Diubah agar sesuai dengan filter specialKeys di frontend
 	case 0x08:
 		return "[BACKSPACE]"
-	case 0x0D:
-		return "[ENTER]"
 	case 0x09:
 		return "[TAB]"
 	case 0x10:
@@ -176,60 +187,6 @@ func (a *App) mapKeys(vk int) string {
 		return "[CTRL]"
 	case 0x14:
 		return "[CAPSLOCK]"
-	case 0x20:
-		return " "
-	case 0xBA:
-		if isShift {
-			return ":"
-		} else {
-			return ";"
-		}
-	case 0xBB:
-		if isShift {
-			return "+"
-		} else {
-			return "="
-		}
-	case 0xBC:
-		if isShift {
-			return "<"
-		} else {
-			return ","
-		}
-	case 0xBD:
-		if isShift {
-			return "_"
-		} else {
-			return "-"
-		}
-	case 0xBE:
-		if isShift {
-			return ">"
-		} else {
-			return "."
-		}
-	case 0xBF:
-		if isShift {
-			return "?"
-		} else {
-			return "/"
-		}
-	}
-
-	if vk >= 0x30 && vk <= 0x39 {
-		sym := ")!@#$%^&*("
-		if isShift {
-			return string(sym[vk-0x30])
-		}
-		return string(rune(vk))
-	}
-	if vk >= 0x41 && vk <= 0x5A {
-		caps, _, _ := procGetKeyState.Call(uintptr(0x14))
-		char := rune(vk)
-		if ((caps&0x0001 != 0) && !isShift) || ((caps&0x0001 == 0) && isShift) {
-			return string(char)
-		}
-		return string(char + 32)
 	}
 	return ""
 }
@@ -238,7 +195,12 @@ func (a *App) writeToLog(content string) {
 	f, _ := os.OpenFile(a.logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if f != nil {
 		defer f.Close()
-		f.WriteString(content)
+		// Jika special key, berikan penanda di log file
+		if len(content) > 1 {
+			f.WriteString(" " + content + " ")
+		} else {
+			f.WriteString(content)
+		}
 	}
 }
 
