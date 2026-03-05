@@ -12,7 +12,7 @@ protect-children is a Windows-based desktop application specifically designed to
 ## 🛠️ How to Compile (Build)
 To allow others to try or develop this program, they need to follow these steps:
 
-#  🎯 Requirements:
+##  🎯 Requirements:
 
 * **Install Go (latest version).**
 
@@ -20,7 +20,7 @@ To allow others to try or develop this program, they need to follow these steps:
 
 * **Install Wails CLI**: go install github.com/wailsapp/wails/v2/cmd/wails@latest.
 
-# 📦Build Steps:
+## 📦Build Steps:
 
 * **Clone repo**: ```git clone https://github.com/username/protect-children.git.```
 
@@ -29,7 +29,7 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Compile**: In the root directory (the folder containing ```wails.json```), run the command: ```wails build```
 * **Result**: A ready-to-use ```.exe``` file will appear in the ```build/bin/``` folder.
 
-# 🚀 Technology
+## 🚀 Technology
 * **Backend**: Go
 
 * **Frontend**: Svelte (via Wails Framework)
