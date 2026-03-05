@@ -1,6 +1,6 @@
 <script> 
 import './style.css'; 
-import { ToggleProtections, UpdateHotkey, SetAutoStart, GetCurrentConfig, UpdateBannedWords, ReadLogs } from '../wailsjs/go/main/App'; 
+import { ToggleProtections, SetAutoStart, GetCurrentConfig, UpdateBannedWords, ReadLogs } from '../wailsjs/go/main/App'; 
 import { EventsOn } from '../wailsjs/runtime/runtime'; 
 import { onMount } from 'svelte';
 
@@ -9,44 +9,26 @@ let isRunning = $state(false);
 let logTokens = $state([]); 
 let currentSentence = $state(""); 
 let autoStart = $state(false); 
-
-let hotkeyDisplay = $state("CTRL + SHIFT + DELETE"); 
-let hotkeyCodes = $state([17, 16, 46]); 
-let isEditingHotkey = $state(false); 
+let isLoaded = $state(false); // Flag untuk mencegah reset saat startup
 
 onMount(async () => {
-    // Load current configuration and sync UI states [cite: 5]
     const config = await GetCurrentConfig();
     isRunning = config.isRunning;
-    hotkeyCodes = config.hotkeyCodes;
     bannedWords = config.bannedWords || "";
     autoStart = config.autoStart || false;
     
-    formatHotkeyText(hotkeyCodes);
-
     const oldLogs = await ReadLogs();
     if (oldLogs) {
         logTokens = [{ text: oldLogs, type: "normal" }];
     }
     
+    isLoaded = true; // Tandai bahwa data sudah berhasil dimuat
+
     setTimeout(() => {
         const el = document.getElementById('log-box');
         if (el) el.scrollTop = el.scrollHeight;
     }, 150);
 });
-
-function formatHotkeyText(codes) {
-    const names = codes.map(c => {
-        if(c === 17) return "CTRL";
-        if(c === 16) return "SHIFT";
-        if(c === 18) return "ALT";
-        if(c === 46) return "DELETE";
-        if(c === 13) return "ENTER";
-        if(c >= 48 && c <= 90) return String.fromCharCode(c);
-        return "KEY-" + c;
-    });
-    hotkeyDisplay = names.join(" + ");
-}
 
 EventsOn("status-updated", (status) => { 
     isRunning = status; 
@@ -81,34 +63,14 @@ function flushSentence() {
     currentSentence = "";
 } 
 
-function captureHotkey(e) { 
-    if (!isEditingHotkey) return;
-    if (e.keyCode === 13 && !e.ctrlKey && !e.shiftKey) return;
-    
-    e.preventDefault(); 
-    let pressedKeys = []; 
-    if (e.ctrlKey) pressedKeys.push({name: "CTRL", code: 17}); 
-    if (e.shiftKey) pressedKeys.push({name: "SHIFT", code: 16});
-    if (e.altKey) pressedKeys.push({name: "ALT", code: 18}); 
-    
-    const keyName = e.key.toUpperCase();
-    if (!["CONTROL", "SHIFT", "ALT"].includes(keyName)) { 
-        pressedKeys.push({name: keyName, code: e.keyCode});
-    } 
-    
-    const finalKeys = pressedKeys.slice(0, 3); 
-    hotkeyDisplay = finalKeys.map(k => k.name).join(" + ");
-    hotkeyCodes = finalKeys.map(k => k.code); 
-} 
-
 async function handleAction() { 
     const newStatus = !isRunning;
-    isEditingHotkey = false;
-    await ToggleProtections(newStatus); 
+    await ToggleProtections(newStatus);
 } 
 
+// Sinkronisasi Sensor List ke Backend hanya jika data sudah selesai dimuat dari DB
 $effect(() => { 
-    if (bannedWords !== undefined) {
+    if (isLoaded && bannedWords !== undefined) {
         UpdateBannedWords(bannedWords);
     } 
 });
@@ -145,10 +107,6 @@ $effect(() => {
           <span class="text-blue-500 italic font-bold">{currentSentence}</span> 
         </div> 
       </div> 
-      <div class="mt-2 flex justify-between items-center bg-blue-900 text-white p-2 px-4 rounded-lg shadow-md shrink-0"> 
-        <span class="text-[11px] font-medium uppercase tracking-widest opacity-60">Recovery Hotkey:</span> 
-        <code class="text-[11px] font-medium tracking-widest">{hotkeyDisplay}</code> 
-      </div> 
     </div> 
 
     <div class="w-[260px] flex flex-col h-full overflow-hidden"> 
@@ -162,13 +120,6 @@ $effect(() => {
               <span class="text-[12px] font-bold">Autostart (On Boot)</span> 
               <input type="checkbox" class="toggle toggle-sm border-[#0095A0] checked:bg-[#0095A0] checked:border-[#0095A0]" style="--tglbg: #FFFFFF !important;" bind:checked={autoStart} disabled={isRunning} onchange={async () => { await SetAutoStart(autoStart); }} /> 
             </div> 
-            <div class="flex items-center justify-between"> 
-              <span class="text-[12px] font-bold">Hotkey</span> 
-              <button class="btn btn-xs {isEditingHotkey ? 'btn-primary' : 'btn-outline border-base-300'}" disabled={isRunning} onclick={async () => { if(isEditingHotkey) { await UpdateHotkey(hotkeyCodes); isEditingHotkey = false; } else { isEditingHotkey = true; } }}> {isEditingHotkey ? 'Save' : 'Change'} </button> 
-            </div> 
-            {#if isEditingHotkey} 
-              <input type="text" readonly value={hotkeyDisplay} onkeydown={captureHotkey} class="input input-bordered input-xs text-center font-bold text-blue-900 animate-pulse bg-blue-50 w-full" /> 
-            {/if} 
           </div> 
           <div class="form-control"> 
             <label class="label p-0 mb-1"> 
