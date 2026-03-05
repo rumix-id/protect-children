@@ -35,3 +35,5 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Frontend**: Svelte (via Wails Framework)
 
 ### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
+
+This project is licensed under Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0). See the LICENSE file for more details.
