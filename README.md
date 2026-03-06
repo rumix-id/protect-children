@@ -36,4 +36,20 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Go Version:** Use Go 1.20 or lower for Windows 7 compatibility; Go 1.21+ does not officially support it.
 * **Core Features:** Logging (Win32 API), Autostart (Registry), and Process Protection (Mutex) are natively compatible across all versions from Windows 7 to 11
 
+# 🚀 How to Use
+## 1. Initialization
+* When you first launch the application, it will automatically create a db folder in its directory to store configurations and activity logs.
+* The system will check for existing configurations; if "Monitoring Active" was previously enabled, it will resume automatically.
+
+## 2. Configuration & Monitoring
+* **Sensor List:** Enter keywords or phrases you wish to monitor in the "Sensor List" text area, separated by commas (e.g., gambling, casino).
+* **Start Monitoring:** Click the START MONITORING button to begin tracking keyboard activity.
+* **Real-time Activity:** The "Typing Activity" box will display your keystrokes. Any word matching your Sensor List will be highlighted in red.
+* **Function Keys:** Common system keys like [ENTER], [CTRL], or [BACKSPACE] will be highlighted in blue for better readability.
+
+## 3. System Features
+* **Autostart:** Enable the "Autostart (On Boot)" toggle to allow the program to run automatically when Windows starts.
+* **Background Protection:** If you try to close the window while monitoring is active, the app will hide to the background instead of exiting to ensure continuous protection.
+* **Single Instance:** The program is designed to run only one instance at a time to prevent system conflicts.
+
 ### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
