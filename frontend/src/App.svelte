@@ -9,45 +9,49 @@ let isRunning = $state(false);
 let logTokens = $state([]); 
 let currentSentence = $state(""); 
 let autoStart = $state(false); 
-let isLoaded = $state(false); // Flag untuk mencegah reset saat startup
+let isLoaded = $state(false);
 
 onMount(async () => {
+
     const config = await GetCurrentConfig();
-    isRunning = config.isRunning;
-    bannedWords = config.bannedWords || "";
-    autoStart = config.autoStart || false;
+    isRunning = config.is_running;
+    bannedWords = config.banned_words || "";
+    autoStart = config.auto_start || false;
     
     const oldLogs = await ReadLogs();
     if (oldLogs) {
-        logTokens = [{ text: oldLogs, type: "normal" }];
+        const list = bannedWords.split(/[, ]+/).map(w => w.trim().toLowerCase());
+        const parts = oldLogs.split(/(\[[A-Z0-9]+\]|\s+)/); 
+        
+        logTokens = parts.filter(p => p !== "" && p !== undefined).map(part => {
+            if (part.startsWith("[") && part.endsWith("]")) {
+                return { text: part, type: "function-key" };
+            }
+            const isBanned = list.some(word => word !== "" && part.toLowerCase().includes(word));
+            return { text: part, type: isBanned ? "banned" : "normal" };
+        });
     }
     
-    isLoaded = true; // Tandai bahwa data sudah berhasil dimuat
-
+    setTimeout(() => { isLoaded = true; }, 150);
     setTimeout(() => {
         const el = document.getElementById('log-box');
         if (el) el.scrollTop = el.scrollHeight;
-    }, 150);
+    }, 250);
 });
 
-EventsOn("status-updated", (status) => { 
-    isRunning = status; 
-});
+EventsOn("status-updated", (status) => { isRunning = status; });
 
 EventsOn("new-key-event", (data) => { 
     const key = data.text; 
-    const specialKeys = ["[BACKSPACE]", "[SHIFT]", "[CTRL]", "[TAB]", "[CAPSLOCK]", "[ENTER]"]; 
-    
-    if (specialKeys.includes(key)) { 
+    if (key.startsWith("[") && key.endsWith("]")) { 
         if (currentSentence !== "") flushSentence(); 
-        logTokens = [...logTokens, { text: key === "[ENTER]" ? "\n" : key, type: "function-key" }]; 
+        logTokens = [...logTokens, { text: key, type: "function-key" }]; 
     } else if (key === " ") { 
         flushSentence(); 
         logTokens = [...logTokens, { text: " ", type: "normal" }]; 
     } else { 
         currentSentence += key; 
     } 
-    
     setTimeout(() => { 
         const el = document.getElementById('log-box'); 
         if (el) el.scrollTop = el.scrollHeight; 
@@ -63,16 +67,10 @@ function flushSentence() {
     currentSentence = "";
 } 
 
-async function handleAction() { 
-    const newStatus = !isRunning;
-    await ToggleProtections(newStatus);
-} 
+async function handleAction() { await ToggleProtections(!isRunning); } 
 
-// Sinkronisasi Sensor List ke Backend hanya jika data sudah selesai dimuat dari DB
 $effect(() => { 
-    if (isLoaded && bannedWords !== undefined) {
-        UpdateBannedWords(bannedWords);
-    } 
+    if (isLoaded && bannedWords !== undefined) { UpdateBannedWords(bannedWords); } 
 });
 </script>
 
@@ -99,7 +97,7 @@ $effect(() => {
             {#if token.type === 'banned'} 
               <span class="bg-[#E43C2F] text-white px-1.5 py-0.5 rounded font-bold shadow-sm inline-block my-0.5">{token.text}</span> 
             {:else if token.type === 'function-key'} 
-              <span class="bg-blue-900 text-white px-1.5 py-0.5 rounded font-bold text-[11px] mx-0.5 shadow-sm inline-block my-0.5 uppercase">{token.text}</span> 
+              <span class="bg-blue-900 text-white px-1.5 py-0.5 rounded font-bold text-[10px] mx-0.5 shadow-sm inline-block my-0.5 uppercase">{token.text}</span> 
             {:else} 
               <span class="text-gray-800">{token.text}</span> 
             {/if} 
@@ -118,7 +116,8 @@ $effect(() => {
           <div class="flex flex-col gap-3"> 
             <div class="flex items-center justify-between"> 
               <span class="text-[12px] font-bold">Autostart (On Boot)</span> 
-              <input type="checkbox" class="toggle toggle-sm border-[#0095A0] checked:bg-[#0095A0] checked:border-[#0095A0]" style="--tglbg: #FFFFFF !important;" bind:checked={autoStart} disabled={isRunning} onchange={async () => { await SetAutoStart(autoStart); }} /> 
+              <input type="checkbox" class="toggle toggle-sm border-[#0095A0] checked:bg-[#0095A0] checked:border-[#0095A0]" style="--tglbg: #FFFFFF !important;"
+                bind:checked={autoStart} disabled={isRunning} onchange={async () => { await SetAutoStart(autoStart); }} /> 
             </div> 
           </div> 
           <div class="form-control"> 
@@ -127,7 +126,9 @@ $effect(() => {
             </label> 
             <textarea bind:value={bannedWords} disabled={isRunning} class="textarea textarea-bordered h-28 text-[12px] leading-tight resize-none focus:outline-none focus:border-[#0095A0]" placeholder="Example: gambling, casino..."></textarea> 
           </div> 
-          <button class="btn btn-md w-full transition-all active:scale-95 {isRunning ? 'bg-[#E43C2F] text-white border-none' : 'bg-[#0095A0] text-white border-none'} text-xs" onclick={handleAction}> {isRunning ? 'STOP MONITORING' : 'START MONITORING'} </button> 
+          <button class="btn btn-md w-full transition-all active:scale-95 {isRunning ? 'bg-[#E43C2F] text-white border-none' : 'bg-[#0095A0] text-white border-none'} text-xs" onclick={handleAction}> 
+            {isRunning ? 'STOP MONITORING' : 'START MONITORING'} 
+          </button> 
         </div> 
       </div> 
     </div> 
