@@ -37,6 +37,10 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Core Features:** Logging (Win32 API), Autostart (Registry), and Process Protection (Mutex) are natively compatible across all versions from Windows 7 to 11
 
 # 🚀 How to Use
+<p align="center">
+  <img src="screenshots/Protect-Children.gif" alt="Protect Children Demo" width="800">
+</p>
+
 ## 1. Initialization
 * When you first launch the application, it will automatically create a db folder in its directory to store configurations and activity logs.
 * The system will check for existing configurations; if "Monitoring Active" was previously enabled, it will resume automatically.
