@@ -30,9 +30,10 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Compile**: In the root directory (the folder containing ```wails.json```), run the command: ```wails build```
 * **Result**: A ready-to-use ```.exe``` file will appear in the ```build/bin/``` folder.
 
-## 🚀 Technology
-* **Backend**: Go
-
-* **Frontend**: Svelte (via Wails Framework)
+## 🖥️ System Compatibility
+* **Windows 10 & 11:** Fully supported, requires Microsoft Edge WebView2 Runtime.
+* **Windows 7 & 8:** Supported only if the user manually installs the Microsoft Edge WebView2 Runtime (Evergreen Bootstrapper).
+* **Go Version:** Use Go 1.20 or lower for Windows 7 compatibility; Go 1.21+ does not officially support it.
+* **Core Features:** Logging (Win32 API), Autostart (Registry), and Process Protection (Mutex) are natively compatible across all versions from Windows 7 to 11
 
 ### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
