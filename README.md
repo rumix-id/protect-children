@@ -53,7 +53,6 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Autostart:** Enable the "Autostart (On Boot)" toggle to allow the program to run automatically when Windows starts.
 * **Background Protection:** If you try to close the window while monitoring is active, the app will hide to the background instead of exiting to ensure continuous protection.
 * **Single Instance:** The program is designed to run only one instance at a time to prevent system conflicts.
-* 
 
 ## 📂 Folder Structure
 
