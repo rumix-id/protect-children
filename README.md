@@ -1,7 +1,13 @@
 ![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)
 #  🛡️ PROTECT-CHILDREN
 protect-children is a Windows-based desktop application specifically designed to help parents monitor their children's digital activities. This program focuses on monitoring text input in specific applications to ensure children's safety from inappropriate content.
+## ✨ Key Features
 
+* **Smart Keyword Detection**: Automatically detects sensitive words or adult content. Suspicious words will be highlighted in red in the log.
+
+* **Stealth Mode**: Runs silently in the background without disturbing your child's activities.
+
+* **Auto-Run**: Option to run the application automatically as soon as the computer is turned on.
 # 🚀 How to Use
 ![Protect Children Demo](screenshots/Protect-Children.gif)
 
@@ -19,14 +25,6 @@ protect-children is a Windows-based desktop application specifically designed to
 * **Autostart:** Enable the "Autostart (On Boot)" toggle to allow the program to run automatically when Windows starts.
 * **Background Protection:** If you try to close the window while monitoring is active, the app will hide to the background instead of exiting to ensure continuous protection.
 * **Single Instance:** The program is designed to run only one instance at a time to prevent system conflicts.
-
-## ✨ Key Features
-
-* **Smart Keyword Detection**: Automatically detects sensitive words or adult content. Suspicious words will be highlighted in red in the log.
-
-* **Stealth Mode**: Runs silently in the background without disturbing your child's activities.
-
-* **Auto-Run**: Option to run the application automatically as soon as the computer is turned on.
 
 ## 🛠️ How to Compile (Build)
 To allow others to try or develop this program, they need to follow these steps:
