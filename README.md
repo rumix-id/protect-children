@@ -74,5 +74,6 @@ protect-children
 ├── go.sum           # Checksum for Go dependencies
 ├── main.go          # The main entry point for the application
 └── wails.json       # Wails project configuration (name, version, etc.)
+---
 
 ### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
