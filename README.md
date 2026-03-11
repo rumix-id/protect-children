@@ -55,7 +55,7 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Single Instance:** The program is designed to run only one instance at a time to prevent system conflicts.
 * 
 
-### 📂 Folder Structure
+## 📂 Folder Structure
 
 ```text
 protect-children
