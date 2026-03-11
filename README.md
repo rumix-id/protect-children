@@ -53,5 +53,26 @@ To allow others to try or develop this program, they need to follow these steps:
 * **Autostart:** Enable the "Autostart (On Boot)" toggle to allow the program to run automatically when Windows starts.
 * **Background Protection:** If you try to close the window while monitoring is active, the app will hide to the background instead of exiting to ensure continuous protection.
 * **Single Instance:** The program is designed to run only one instance at a time to prevent system conflicts.
+* 
+
+### 📂 Folder Structure
+
+```text
+protect-children
+
+├── build            # Compilation results, application icon, and installer files
+│ ├── windows
+│     ├── icon       # Program icon source  
+├── frontend         # Source code for UI (HTML, CSS, JS/Framework)
+│ ├── dist           # Frontend build results
+│ └── src            # Components and display logic
+├── screenshots      # Visual documentation
+├── LICENSE          # Project open-source license
+├── README.md        # Main project documentation
+├── app.go           # Main application logic (bridge between Go and Frontend)
+├── go.mod           # Go module definitions and dependencies
+├── go.sum           # Checksum for Go dependencies
+├── main.go          # The main entry point for the application
+└── wails.json       # Wails project configuration (name, version, etc.)
 
 ### ⚠️ Disclaimer: This program is created purely for educational purposes and legal parental supervision. Any misuse of this program to violate the privacy of others without permission is the responsibility of each user.
