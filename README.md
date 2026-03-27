@@ -1,8 +1,8 @@
+#  🛡️ PROTECT-CHILDREN
 ![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)
 ![Wails](https://img.shields.io/badge/built%20with-Wails%20v2-red)
 ![Go](https://img.shields.io/badge/backend-Go-00ADD8?logo=go)
 ![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react)
-#  🛡️ PROTECT-CHILDREN
 protect-children is a Windows-based desktop application specifically designed to help parents monitor their children's digital activities. This program focuses on monitoring text input in specific applications to ensure children's safety from inappropriate content.
 ## ✨ Key Features
 
